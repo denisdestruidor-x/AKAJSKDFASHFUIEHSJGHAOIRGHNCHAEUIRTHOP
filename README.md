@@ -1,10 +1,11 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+
+local espEnabled = true
+local espColor = Color3.fromRGB(255, 111, 111)
 
 local LocalPlayer = Players.LocalPlayer
 local name = LocalPlayer.Name
@@ -18,6 +19,36 @@ local function CollectCoins()
     for _, coin in workspace.GameObjects:GetChildren() do
         firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, coin, 0)
         firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, coin, 1)
+    end
+end
+
+local function Esp()
+    if espEnabled == true then
+        while espEnabled == true do
+            for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+                if player ~= game.Players.LocalPlayer and player.Character then
+                    if player.Character:FindFirstChild("Highlight") then
+                        player.Character:FindFirstChild("Highlight"):Destroy()
+                    end
+                    local Character = player.Character
+                    local hilite = Instance.new("Highlight")
+                    hilite.Parent = Character
+                    hilite.OutlineTransparency = 1
+                    hilite.FillColor = espColor
+                    wait(0.01)
+                end 
+            end
+        end
+    else
+        for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                local Character = player.Character
+                local hilite = Character:FindFirstChild("Highlight")
+                if hilite then
+                    hilite:Destroy()
+                end
+            end
+        end
     end
 end
 
@@ -51,7 +82,7 @@ local function Hop()
         end
 
         for _, v in pairs(Site.data) do
-            if tonumber(v.maxPlayers) > tonumber(v.playing) then
+            if tonumber(v.maxPlayers) > 12 then
                 local ID = tostring(v.id)
 
                 if not table.find(AllIDs, ID) then
@@ -120,6 +151,7 @@ local Tabs = {
     Farme = Window:AddTab({ Title = "Auto Farm", Icon = "" }),
     Main = Window:AddTab({ Title = "Player", Icon = "" }),
     Siker = Window:AddTab({ Title = "Siker", Icon = "" }),
+    Esp = Window:AddTab({ Title = "Esp", Icon = "" }),
     Server = Window:AddTab({ Title = "Server", Icon = "" }),
 }
 
@@ -187,6 +219,22 @@ Tabs.Main:AddSlider("JumpSlider", {
         end
     end
 })
+
+local Toggle = Tabs.Esp:AddToggle("MyToggle", {Title = "Esp enabled", Default = false })
+
+Toggle:OnChanged(function()
+    espEnabled = not espEnabled
+    Esp()
+end)
+
+local Colorpicker = Tabs.Esp:AddColorpicker("Colorpicker", {
+    Title = "Esp Color",
+    Default = Color3.fromRGB(255, 111, 111)
+})
+
+Colorpicker:OnChanged(function()
+    espColor = Colorpicker.Value
+end)
 
 -- Load saved configurations
 SaveManager:LoadAutoloadConfig()
